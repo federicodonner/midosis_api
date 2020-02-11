@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Feb 11, 2020 at 03:45 AM
+-- Generation Time: Feb 11, 2020 at 09:04 PM
 -- Server version: 5.7.23
 -- PHP Version: 7.2.10
 
@@ -19,8 +19,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `medicina`
 --
-CREATE DATABASE IF NOT EXISTS `medicina` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE `medicina`;
 
 -- --------------------------------------------------------
 
@@ -81,6 +79,20 @@ CREATE TABLE `droga_x_dosis` (
   `dosis_id` int(11) NOT NULL,
   `cantidad_mg` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `droga_x_dosis`
+--
+
+INSERT INTO `droga_x_dosis` (`id`, `droga_id`, `dosis_id`, `cantidad_mg`) VALUES
+(1, 1, 1, 100),
+(2, 2, 1, 50),
+(3, 3, 1, 10),
+(4, 1, 2, 4),
+(5, 2, 3, 40),
+(6, 1, 3, 50),
+(7, 3, 4, 30),
+(8, 1, 4, 15);
 
 -- --------------------------------------------------------
 
@@ -183,7 +195,7 @@ ALTER TABLE `droga`
 -- AUTO_INCREMENT for table `droga_x_dosis`
 --
 ALTER TABLE `droga_x_dosis`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `medicina`
