@@ -18,6 +18,7 @@ $app = new \Slim\App;
 // require '../src/routes/mail.php';
 // require '../src/routes/oauth.php';
 // require '../src/routes/yo.php';
+require '../src/routes/drogaxdosis.php';
 require '../src/routes/pastillero.php';
 require '../src/routes/medicina.php';
 require '../src/routes/droga.php';
