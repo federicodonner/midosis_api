@@ -5,7 +5,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 // Devuelve todas las drogas y sus medicinas
 $app->get('/api/droga', function (Request $request, Response $response) {
     try {
-        $sql = "SELECT * FROM droga";
+        $sql = "SELECT * FROM droga ORDER BY nombre";
         // Get db object
         $db = new db();
         // Connect
