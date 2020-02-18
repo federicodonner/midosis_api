@@ -7,8 +7,9 @@ $app->post('/api/drogaxdosis', function (Request $request, Response $response) {
     $droga_id = $request->getParam('droga_id');
     $dosis_id = $request->getParam('dosis_id');
     $cantidad_mg = $request->getParam('cantidad_mg');
+    $notas = $request->getParam('notas');
 
-    $sql = "INSERT INTO droga_x_dosis (droga_id,dosis_id,cantidad_mg) VALUES (:droga_id,:dosis_id,:cantidad_mg)";
+    $sql = "INSERT INTO droga_x_dosis (droga_id,dosis_id,cantidad_mg,notas) VALUES (:droga_id,:dosis_id,:cantidad_mg,:notas)";
 
     try {
         // Get db object
@@ -21,6 +22,7 @@ $app->post('/api/drogaxdosis', function (Request $request, Response $response) {
         $stmt->bindParam(':droga_id', $droga_id);
         $stmt->bindParam(':dosis_id', $dosis_id);
         $stmt->bindParam(':cantidad_mg', $cantidad_mg);
+        $stmt->bindParam(':notas', $notas);
 
         $stmt->execute();
 
@@ -42,12 +44,14 @@ $app->put('/api/drogaxdosis/{id}', function (Request $request, Response $respons
     $droga_id = $request->getParam('droga_id');
     $dosis_id = $request->getParam('dosis_id');
     $cantidad_mg = $request->getParam('cantidad_mg');
+    $notas = $request->getParam('notas');
 
 
     $sql = "UPDATE droga_x_dosis SET
         droga_id = :droga_id,
         dosis_id = :dosis_id,
-        cantidad_mg = :cantidad_mg
+        cantidad_mg = :cantidad_mg,
+        notas = :notas
         WHERE id = $id";
 
     try {
@@ -61,6 +65,7 @@ $app->put('/api/drogaxdosis/{id}', function (Request $request, Response $respons
         $stmt->bindParam(':droga_id', $droga_id);
         $stmt->bindParam(':dosis_id', $dosis_id);
         $stmt->bindParam(':cantidad_mg', $cantidad_mg);
+        $stmt->bindParam(':notas', $notas);
 
         $stmt->execute();
 

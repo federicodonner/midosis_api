@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Feb 11, 2020 at 09:04 PM
+-- Generation Time: Feb 18, 2020 at 03:20 PM
 -- Server version: 5.7.23
 -- PHP Version: 7.2.10
 
@@ -38,11 +38,13 @@ CREATE TABLE `dosis` (
 --
 
 INSERT INTO `dosis` (`id`, `horario`, `pastillero_id`) VALUES
-(1, '9 AM', 1),
+(1, '9:30 AM', 1),
 (2, 'Mediodia', 1),
 (3, '4 PM', 1),
 (4, 'Cena', 1),
-(5, 'Noche', 1);
+(5, 'Noche', 1),
+(6, 'mañana', 2),
+(7, 'Noche', 2);
 
 -- --------------------------------------------------------
 
@@ -61,10 +63,20 @@ CREATE TABLE `droga` (
 --
 
 INSERT INTO `droga` (`id`, `nombre`) VALUES
-(1, 'Droga 1'),
-(2, 'Droga 2'),
-(3, 'Prueba esde postman'),
-(4, 'Prueba esde postman');
+(14, 'Tacrolimus'),
+(15, 'Prednisona'),
+(16, 'Furosemide'),
+(17, 'Lercardipina'),
+(18, 'Losartan'),
+(19, 'Esoprazol'),
+(20, 'Levodopa'),
+(21, 'Bisopropol'),
+(22, 'Linagliptina'),
+(23, 'Oxibutinina'),
+(24, 'Allopurinol'),
+(25, 'Escitalopram'),
+(26, 'Atovastatina'),
+(27, 'Melatonina');
 
 -- --------------------------------------------------------
 
@@ -77,22 +89,36 @@ CREATE TABLE `droga_x_dosis` (
   `id` int(11) NOT NULL,
   `droga_id` int(11) NOT NULL,
   `dosis_id` int(11) NOT NULL,
-  `cantidad_mg` int(11) NOT NULL
+  `cantidad_mg` float NOT NULL,
+  `notas` varchar(500) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `droga_x_dosis`
 --
 
-INSERT INTO `droga_x_dosis` (`id`, `droga_id`, `dosis_id`, `cantidad_mg`) VALUES
-(1, 1, 1, 100),
-(2, 2, 1, 50),
-(3, 3, 1, 10),
-(4, 1, 2, 4),
-(5, 2, 3, 40),
-(6, 1, 3, 50),
-(7, 3, 4, 30),
-(8, 1, 4, 15);
+INSERT INTO `droga_x_dosis` (`id`, `droga_id`, `dosis_id`, `cantidad_mg`, `notas`) VALUES
+(3, 14, 1, 1, ''),
+(4, 15, 1, 5, ''),
+(5, 16, 1, 40, ''),
+(6, 17, 1, 10, ''),
+(7, 18, 1, 25, ''),
+(8, 19, 1, 20, ''),
+(9, 20, 1, 250, ''),
+(10, 21, 2, 5, ''),
+(11, 22, 2, 5, ''),
+(12, 23, 2, 200, ''),
+(13, 20, 2, 125, ''),
+(14, 24, 3, 50, ''),
+(15, 20, 3, 250, ''),
+(16, 25, 3, 20, ''),
+(18, 14, 4, 0.5, ''),
+(19, 17, 4, 10, ''),
+(20, 18, 4, 25, ''),
+(21, 26, 4, 10, ''),
+(22, 20, 4, 250, ''),
+(23, 27, 5, 3, ''),
+(24, 14, 6, 40, 'Notas editadas');
 
 -- --------------------------------------------------------
 
@@ -109,18 +135,6 @@ CREATE TABLE `medicina` (
   `concentracion_mg` int(11) NOT NULL,
   `imagen` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `medicina`
---
-
-INSERT INTO `medicina` (`id`, `nombre`, `droga_id`, `comprimidos_por_caja`, `concentracion_mg`, `imagen`) VALUES
-(1, 'Medicina 1', 1, 10, 100, ''),
-(2, 'Medicina 2', 1, 20, 100, ''),
-(3, 'Medicina 3', 2, 300, 10, ''),
-(4, 'Medicina desde postman', 2, 3, 4, 'Imagen'),
-(6, 'Medicina desde postman', 2, 3, 4, 'Imagen'),
-(7, 'Medicina desde postman', 3, 3, 4, 'Imagen');
 
 -- --------------------------------------------------------
 
@@ -139,7 +153,8 @@ CREATE TABLE `pastillero` (
 --
 
 INSERT INTO `pastillero` (`id`, `dueno`) VALUES
-(1, 'Julio');
+(1, 'Julio'),
+(2, 'PRUEBA');
 
 --
 -- Indexes for dumped tables
@@ -183,19 +198,19 @@ ALTER TABLE `pastillero`
 -- AUTO_INCREMENT for table `dosis`
 --
 ALTER TABLE `dosis`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `droga`
 --
 ALTER TABLE `droga`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `droga_x_dosis`
 --
 ALTER TABLE `droga_x_dosis`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `medicina`
@@ -207,7 +222,7 @@ ALTER TABLE `medicina`
 -- AUTO_INCREMENT for table `pastillero`
 --
 ALTER TABLE `pastillero`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
