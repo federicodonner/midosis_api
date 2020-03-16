@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Feb 18, 2020 at 03:20 PM
+-- Generation Time: Mar 16, 2020 at 11:44 PM
 -- Server version: 5.7.23
 -- PHP Version: 7.2.10
 
@@ -55,28 +55,38 @@ INSERT INTO `dosis` (`id`, `horario`, `pastillero_id`) VALUES
 DROP TABLE IF EXISTS `droga`;
 CREATE TABLE `droga` (
   `id` int(11) NOT NULL,
-  `nombre` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL
+  `nombre` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `pastillero` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `droga`
 --
 
-INSERT INTO `droga` (`id`, `nombre`) VALUES
-(14, 'Tacrolimus'),
-(15, 'Prednisona'),
-(16, 'Furosemide'),
-(17, 'Lercardipina'),
-(18, 'Losartan'),
-(19, 'Esoprazol'),
-(20, 'Levodopa'),
-(21, 'Bisopropol'),
-(22, 'Linagliptina'),
-(23, 'Oxibutinina'),
-(24, 'Allopurinol'),
-(25, 'Escitalopram'),
-(26, 'Atovastatina'),
-(27, 'Melatonina');
+INSERT INTO `droga` (`id`, `nombre`, `pastillero`) VALUES
+(14, 'Tacrolimus', 1),
+(15, 'Prednisona', 1),
+(16, 'Furosemide', 1),
+(17, 'Lercardipina', 1),
+(18, 'Losartan', 1),
+(19, 'Esoprazol', 1),
+(20, 'Levodopa', 1),
+(21, 'Bisopropol', 1),
+(22, 'Linagliptina', 1),
+(23, 'Oxibutinina', 1),
+(24, 'Allopurinol', 1),
+(25, 'Escitalopram', 1),
+(26, 'Atovastatina', 1),
+(27, 'Melatonina', 1),
+(28, 'Prueba droga', 2),
+(29, 'Prueba esde postman', 2),
+(30, 'Prueba desde app', 2),
+(31, 'PRueba desde app 2', 2),
+(32, 'er', 2),
+(33, '123', 2),
+(34, '13', 2),
+(35, '44', 2),
+(36, 'Prueba desde postman 5', 2);
 
 -- --------------------------------------------------------
 
@@ -117,8 +127,12 @@ INSERT INTO `droga_x_dosis` (`id`, `droga_id`, `dosis_id`, `cantidad_mg`, `notas
 (20, 18, 4, 25, ''),
 (21, 26, 4, 10, ''),
 (22, 20, 4, 250, ''),
-(23, 27, 5, 3, ''),
-(24, 14, 6, 40, 'Notas editadas');
+(26, 25, 6, 2466220, ''),
+(29, 25, 7, 50, 'notas'),
+(31, 28, 6, 109, 'Otras notas editadas33333'),
+(32, 27, 7, 13, 'Notas'),
+(33, 28, 7, 12, '14'),
+(34, 36, 6, 10, 'Nomtas de prueba desde postman');
 
 -- --------------------------------------------------------
 
@@ -204,19 +218,19 @@ ALTER TABLE `dosis`
 -- AUTO_INCREMENT for table `droga`
 --
 ALTER TABLE `droga`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `droga_x_dosis`
 --
 ALTER TABLE `droga_x_dosis`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `medicina`
 --
 ALTER TABLE `medicina`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pastillero`
