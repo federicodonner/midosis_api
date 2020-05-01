@@ -22,6 +22,7 @@ require '../src/routes/drogaxdosis.php';
 require '../src/routes/pastillero.php';
 require '../src/routes/medicina.php';
 require '../src/routes/droga.php';
+require '../src/routes/compra.php';
 require '../src/routes/cors.php';
 
 
