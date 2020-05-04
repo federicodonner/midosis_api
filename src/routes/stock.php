@@ -57,6 +57,7 @@ $app->get('/api/stock', function (Request $request, Response $response) {
 
             $droga->disponible_total = $droga_mg_total;
             $droga->dosis_total = $dosis_total;
+            $droga->dosis_semanal = $dosis_total * 7;
             if ($dosis_total != 0) {
                 $dias_disponible = floor($droga_mg_total/$dosis_total);
             } else {
