@@ -39,7 +39,7 @@ $app->get('/api/stock', function (Request $request, Response $response) {
             // Calcula para cuántos días hay stock
             foreach ($stocks as $stock) {
                 $stockComprimido = $stock->comprimido;
-                $stockCantidad = $stock->cantidad;
+                $stockCantidad = $stock->cantidad_doceavos/12;
 
                 // droga_mg_total son los miligramos totales disponibles de la medicina
                 $droga_mg_total = $droga_mg_total + $stockComprimido*$stockCantidad;

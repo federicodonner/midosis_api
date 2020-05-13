@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: May 01, 2020 at 12:40 AM
+-- Generation Time: May 13, 2020 at 04:26 AM
 -- Server version: 5.7.26
 -- PHP Version: 7.4.2
 
@@ -103,7 +103,7 @@ CREATE TABLE `stock` (
   `id` int(11) NOT NULL,
   `droga` int(11) NOT NULL,
   `comprimido` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
+  `cantidad_doceavos` int(11) NOT NULL,
   `fecha_ingreso` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

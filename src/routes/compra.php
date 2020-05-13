@@ -6,7 +6,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 $app->post('/api/compra', function (Request $request, Response $response) {
     $droga = $request->getParam('droga');
     $comprimido = $request->getParam('comprimido');
-    $cantidad = $request->getParam('cantidad');
+    $cantidad = $request->getParam('cantidad')*12;
 
     try {
         $sql = "SELECT * FROM stock WHERE droga = $droga AND comprimido = $comprimido";
@@ -24,8 +24,7 @@ $app->post('/api/compra', function (Request $request, Response $response) {
         if (empty($stocks)) {
             $fecha_ahora = time();
 
-
-            $sql = "INSERT INTO stock (droga, comprimido, cantidad, fecha_ingreso) VALUES (:droga,:comprimido,:cantidad,:fecha_ingreso)";
+            $sql = "INSERT INTO stock (droga, comprimido, cantidad_doceavos, fecha_ingreso) VALUES (:droga,:comprimido,:cantidad,:fecha_ingreso)";
 
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':droga', $droga);
@@ -40,9 +39,9 @@ $app->post('/api/compra', function (Request $request, Response $response) {
         } else {
             // Si el array no está vacío, entonces incremento el stock del registro
 
-            $nuevo_stock = $stocks[0]->cantidad + $cantidad;
+            $nuevo_stock = $stocks[0]->cantidad_doceavos + $cantidad;
             $id_stock = $stocks[0]->id;
-            $sql = "UPDATE stock  SET cantidad = $nuevo_stock WHERE id=$id_stock";
+            $sql = "UPDATE stock  SET cantidad_doceavos = $nuevo_stock WHERE id=$id_stock";
             $stmt = $db->prepare($sql);
             $stmt->execute();
 

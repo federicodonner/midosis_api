@@ -24,6 +24,7 @@ require '../src/routes/medicina.php';
 require '../src/routes/droga.php';
 require '../src/routes/compra.php';
 require '../src/routes/stock.php';
+require '../src/routes/armarpastillero.php';
 require '../src/routes/cors.php';
 
 
