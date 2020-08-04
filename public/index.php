@@ -6,18 +6,15 @@ use PHPMailer\PHPMailer\Exception;
 
 require '../vendor/autoload.php';
 require '../src/config/db.php';
+require '../src/auxiliares/funciones.php';
+
+
 
 $app = new \Slim\App;
 
+
+
 // Customer routes
-// require '../src/routes/libros.php';
-// require '../src/routes/reviews.php';
-// require '../src/routes/usuarios.php';
-// require '../src/routes/empresas.php';
-// require '../src/routes/alquileres.php';
-// require '../src/routes/mail.php';
-// require '../src/routes/oauth.php';
-// require '../src/routes/yo.php';
 require '../src/routes/drogaxdosis.php';
 require '../src/routes/pastillero.php';
 require '../src/routes/medicina.php';

@@ -32,10 +32,6 @@ $app->post('/api/compra', function (Request $request, Response $response) {
             $stmt->bindParam(':cantidad', $cantidad);
             $stmt->bindParam(':fecha_ingreso', $fecha_ahora);
             $stmt->execute();
-
-            $newResponse = $response->withStatus(200);
-            $body = $response->getBody();
-            $body->write('{"status": "success","message": "Stock actualizado"}');
         } else {
             // Si el array no está vacío, entonces incremento el stock del registro
 
@@ -44,16 +40,13 @@ $app->post('/api/compra', function (Request $request, Response $response) {
             $sql = "UPDATE stock  SET cantidad_doceavos = $nuevo_stock WHERE id=$id_stock";
             $stmt = $db->prepare($sql);
             $stmt->execute();
-
-            $newResponse = $response->withStatus(200);
-            $body = $response->getBody();
-            $body->write('{"status": "success","message": "Stock actualizado"}');
         }
 
 
-        $newResponse = $newResponse->withBody($body);
-        return $newResponse;
+        $db = null;
+        return messageResponse($response, "Compra ingresada exitosamente.", 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });

@@ -6,24 +6,21 @@ use \Psr\Http\Message\ResponseInterface as Response;
 $app->get('/api/pastillero', function (Request $request, Response $response) {
     try {
         $sql = "SELECT * FROM pastillero";
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
         // Selecciona todos los pastilleros
         $stmt = $db->query($sql);
         $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
 
+        // Los tiene que agregar a un objeto para devolverlos
+        $pastilleros_response->pastilleros = $pastilleros;
 
-        // Reset all variables
         $db = null;
-
-        // Agrega el array de drogas para la respuesta
-        $newResponse = $response->withJson($pastilleros);
-        return $newResponse;
+        return dataResponse($response, $pastilleros_response, 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
 
@@ -33,27 +30,28 @@ $app->get('/api/pastillero/{id}', function (Request $request, Response $response
     try {
         $id = $request->getAttribute('id');
         $sql = "SELECT * FROM pastillero WHERE id = $id";
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
-        // Selecciona todas las drogas
+        // FALTA VERIFICAR QUE EL PASTILLERO EXISTA
         $stmt = $db->query($sql);
         $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
         $pastillero = $pastilleros[0];
 
+        // Obtiene las dosis ingresadas para el pastillero
         $sql = "SELECT * FROM dosis WHERE pastillero_id = $id";
 
         $stmt = $db->query($sql);
         $dosis = $stmt->fetchAll(PDO::FETCH_OBJ);
 
+        // Por cada dosis, va a buscar qué droga le corresponde
         foreach ($dosis as $dosi) {
             $dosi_id = $dosi->id;
             $sql = "SELECT * FROM droga_x_dosis WHERE dosis_id = $dosi_id";
             $stmt = $db->query($sql);
             $drogas = $stmt->fetchAll(PDO::FETCH_OBJ);
 
+            // Por cada droga, va a buscar los detalles
             foreach ($drogas as $droga) {
                 $droga_id = $droga->droga_id;
                 $sql = "SELECT * FROM droga WHERE id = $droga_id";
@@ -66,19 +64,12 @@ $app->get('/api/pastillero/{id}', function (Request $request, Response $response
             $dosi->drogas = $drogas;
         }
 
-
         $pastillero->dosis = $dosis;
 
-
-        // Reset all variables
         $db = null;
-
-        // Agrega el array de drogas para la respuesta
-        $newResponse = $response->withJson($pastillero);
-        return $newResponse;
+        return dataResponse($response, $pastillero, 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
-
-// */

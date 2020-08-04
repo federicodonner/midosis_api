@@ -3,22 +3,14 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
 // Devuelve todas las drogas y sus medicinas
-$app->get('/api/stock', function (Request $request, Response $response) {
+$app->get('/api/stock/{id}', function (Request $request, Response $response) {
     try {
+        // Obtiene el id del pastillero del request
+        $pastillero = $request->getAttribute('id');
 
-      // Verifica que se haya esepcificado de qué pastillero obtener los medicamentos
-        $pastillero = $request->getQueryParams()['pastillero'];
+        $sql = "SELECT * FROM droga WHERE pastillero = '$pastillero' ORDER BY nombre";
 
-        // En caso de contar con el pastillero, se hace la consulta
-        if ($pastillero) {
-            $sql = "SELECT * FROM droga WHERE pastillero = '$pastillero' ORDER BY nombre";
-        } else {
-            $sql = "SELECT * FROM droga ORDER BY nombre";
-        }
-
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
         // Selecciona todas las drogas
@@ -54,7 +46,6 @@ $app->get('/api/stock', function (Request $request, Response $response) {
                 $dosis_total = $dosis_total + $dosis->cantidad_mg;
             }
 
-
             $droga->disponible_total = $droga_mg_total;
             $droga->dosis_total = $dosis_total;
             $droga->dosis_semanal = $dosis_total * 7;
@@ -69,46 +60,13 @@ $app->get('/api/stock', function (Request $request, Response $response) {
             $droga->stocks = $stocks;
         }
 
-        // Reset all variables
-        $db = null;
+        // Genera un objeto para la respuesta
+        $drogas_response->drogas = $drogas;
 
-        // Agrega el array de drogas para la respuesta
-        $newResponse = $response->withJson($drogas);
-        return $newResponse;
+        $db = null;
+        return dataResponse($response, $drogas_response, 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
-
-
-
-//
-// // Add product
-// $app->post('/api/droga', function (Request $request, Response $response) {
-//     $nombre = $request->getParam('nombre');
-//     $pastillero = $request->getParam('pastillero');
-//
-//     $sql = "INSERT INTO droga (nombre, pastillero) VALUES (:nombre, :pastillero)";
-//
-//     try {
-//         // Get db object
-//         $db = new db();
-//         // Connect
-//         $db = $db->connect();
-//
-//         $stmt = $db->prepare($sql);
-//
-//         $stmt->bindParam(':nombre', $nombre);
-//         $stmt->bindParam(':pastillero', $pastillero);
-//
-//         $stmt->execute();
-//
-//         $newResponse = $response->withStatus(200);
-//         $body = $response->getBody();
-//         $body->write('{"status": "success","message": "Droga agregada", "droga": "'.$nombre.'"}');
-//         $newResponse = $newResponse->withBody($body);
-//         return $newResponse;
-//     } catch (PDOException $e) {
-//         echo '{"error":{"text": '.$e->getMessage().'}}';
-//     }
-// });

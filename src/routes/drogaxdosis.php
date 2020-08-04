@@ -12,9 +12,7 @@ $app->post('/api/drogaxdosis', function (Request $request, Response $response) {
     $sql = "INSERT INTO droga_x_dosis (droga_id,dosis_id,cantidad_mg,notas) VALUES (:droga_id,:dosis_id,:cantidad_mg,:notas)";
 
     try {
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
         $stmt = $db->prepare($sql);
@@ -26,13 +24,11 @@ $app->post('/api/drogaxdosis', function (Request $request, Response $response) {
 
         $stmt->execute();
 
-        $newResponse = $response->withStatus(200);
-        $body = $response->getBody();
-        $body->write('{"status": "success","message": "dosis agregada"}');
-        $newResponse = $newResponse->withBody($body);
-        return $newResponse;
+        $db = null;
+        return messageResponse($response, 'Dosis agregada exitosamente.', 201);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
 
@@ -55,9 +51,7 @@ $app->put('/api/drogaxdosis/{id}', function (Request $request, Response $respons
         WHERE id = $id";
 
     try {
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
         $stmt = $db->prepare($sql);
@@ -69,12 +63,11 @@ $app->put('/api/drogaxdosis/{id}', function (Request $request, Response $respons
 
         $stmt->execute();
 
-        $newResponse = $response->withStatus(200);
-        $body = $response->getBody();
-        $body->write('{"status": "success","message": "Dosis actualizada"}');
-        $newResponse = $newResponse->withBody($body);
+        $db = null;
+        return messageResponse($response, 'Dosis actualizada exitosamente.', 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
 
@@ -100,11 +93,10 @@ $app->delete('/api/drogaxdosis/{id}', function (Request $request, Response $resp
 
         $stmt->execute();
 
-        $newResponse = $response->withStatus(200);
-        $body = $response->getBody();
-        $body->write('{"status": "success","message": "Dosis eliminada"}');
-        $newResponse = $newResponse->withBody($body);
+        $db = null;
+        return messageResponse($response, "Dosis eliminada exitosamente.", 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });

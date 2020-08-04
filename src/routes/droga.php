@@ -7,18 +7,16 @@ $app->get('/api/droga', function (Request $request, Response $response) {
     try {
 
       // Verifica que se haya esepcificado de qué pastillero obtener los medicamentos
-      $pastillero = $request->getQueryParams()['pastillero'];
+        $pastillero = $request->getQueryParams()['pastillero'];
 
-      // En caso de contar con el pastillero, se hace la consulta
-      if($pastillero){
-        $sql = "SELECT * FROM droga WHERE pastillero = '$pastillero' ORDER BY nombre";
-      }else{
-        $sql = "SELECT * FROM droga ORDER BY nombre";
-      }
+        // En caso de contar con el pastillero, se hace la consulta
+        if ($pastillero) {
+            $sql = "SELECT * FROM droga WHERE pastillero = '$pastillero' ORDER BY nombre";
+        } else {
+            $sql = "SELECT * FROM droga ORDER BY nombre";
+        }
 
-        // Get db object
         $db = new db();
-        // Connect
         $db = $db->connect();
 
         // Selecciona todas las drogas
@@ -37,14 +35,14 @@ $app->get('/api/droga', function (Request $request, Response $response) {
             $droga->medicinas = $medicinas;
         }
 
-        // Reset all variables
+        // Genera un objeto para la respuesta
+        $drogas_response->drogas = $drogas;
         $db = null;
-
-        // Agrega el array de drogas para la respuesta
-        $newResponse = $response->withJson($drogas);
+        return dataResponse($response, $drogas_response, 200);
         return $newResponse;
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
 

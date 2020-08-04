@@ -55,7 +55,7 @@ $app->post('/api/armarpastillero', function (Request $request, Response $respons
                         // elimina toda la droga y descuenta de la dósis la cantidad
                         // eliminada. Luego sigue con el siguiente stock
                         $sql = "UPDATE stock SET cantidad_doceavos = 0 WHERE id = $stock->stock_id";
-                        
+
                         $stmt = $db->query($sql);
                         $stmt->execute();
 
@@ -73,12 +73,10 @@ $app->post('/api/armarpastillero', function (Request $request, Response $respons
         $stmt = $db->query($sql);
         $stmt->execute();
 
-        $newResponse = $response->withStatus(200);
-        $body = $response->getBody();
-        $body->write('{"status": "success","message": "Stock procesado"}');
-        $newResponse = $newResponse->withBody($body);
-        return $newResponse;
+        $db = null;
+        return messageResponse($response, "Stock procesado exitosamente", 200);
     } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 503);
     }
 });
