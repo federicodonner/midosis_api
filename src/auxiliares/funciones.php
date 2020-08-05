@@ -32,3 +32,23 @@ function dataResponse(Response $response, object $data, Int $status)
      }
      return implode('', $pieces);
  };
+
+ // Devuelve el usuario del login en base al token
+  function verifyToken(String $access_token)
+  {
+      if (!empty($access_token)) {
+          $sql = "SELECT * FROM login WHERE token = '$access_token'";
+          try {
+              $db = new db();
+              $db = $db->connect();
+              $stmt = $db->query($sql);
+              $users = $stmt->fetchAll(PDO::FETCH_OBJ);
+              $db = null;
+              return $users;
+          } catch (PDOException $e) {
+              echo '{"error":{"text": '.$e->getMessage().'}}';
+          }
+      } else {
+          return [];
+      }
+  };

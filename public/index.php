@@ -17,11 +17,14 @@ $app = new \Slim\App;
 // Customer routes
 require '../src/routes/drogaxdosis.php';
 require '../src/routes/pastillero.php';
-require '../src/routes/medicina.php';
+// require '../src/routes/medicina.php';
 require '../src/routes/droga.php';
 require '../src/routes/compra.php';
 require '../src/routes/stock.php';
 require '../src/routes/armarpastillero.php';
+require '../src/routes/usuario.php';
+require '../src/routes/oauth.php';
+require '../src/routes/verificarlogin.php';
 require '../src/routes/cors.php';
 
 
