@@ -16,7 +16,7 @@ $app->get('/api/usuario', function (Request $request, Response $response) {
             // Verify that there is a user logged in
             if (!empty($user_found)) {
                 // Devuelve el usuario dueño del token
-                $usuario_id = $user_found[0]->id;
+                $usuario_id = $user_found[0]->usuario_id;
                 $sql = "SELECT * FROM usuario WHERE id = $usuario_id";
 
                 try {
@@ -38,37 +38,6 @@ $app->get('/api/usuario', function (Request $request, Response $response) {
 
                         $stmt = $db->query($sql);
                         $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                        foreach ($pastilleros as $pastillero) {
-                            $pastillero_id = $pastillero->id;
-                            // Obtiene las dosis ingresadas para el pastillero
-                            $sql = "SELECT * FROM dosis WHERE pastillero_id = $pastillero_id";
-
-                            $stmt = $db->query($sql);
-                            $dosis = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                            // Por cada dosis, va a buscar qué droga le corresponde
-                            foreach ($dosis as $dosi) {
-                                $dosi_id = $dosi->id;
-                                $sql = "SELECT * FROM droga_x_dosis WHERE dosis_id = $dosi_id";
-                                $stmt = $db->query($sql);
-                                $drogas = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                                // Por cada droga, va a buscar los detalles
-                                foreach ($drogas as $droga) {
-                                    $droga_id = $droga->droga_id;
-                                    $sql = "SELECT * FROM droga WHERE id = $droga_id";
-                                    $stmt = $db->query($sql);
-                                    $drogas_de_dosis = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-                                    $droga->nombre = $drogas_de_dosis[0]->nombre;
-                                }
-
-                                $dosi->drogas = $drogas;
-                            }
-
-                            $pastillero->dosis = $dosis;
-                        }
 
                         $usuario->pastilleros = $pastilleros;
 
