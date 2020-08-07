@@ -65,7 +65,7 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
             // Verify that there is a user logged in
             if (!empty($user_found)) {
                 // Devuelve el usuario dueño del token
-                $usuario_id = $user_found[0]->id;
+                $usuario_id = $user_found[0]->usuario_id;
                 // Obtiene los detalles del pastillero del request
                 $dia_actualizacion = $request->getParam('dia_actualizacion');
                 $dosis = $request->getParam('dosis');
@@ -109,6 +109,7 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
                             foreach ($dosis as $dosi) {
                                 // Convierte el string a un JSON
                                 $dosi_objeto = json_decode($dosi);
+
                                 $sql = "INSERT INTO dosis (horario, pastillero_id) VALUES (:horario, :pastillero_id)";
 
                                 $horario = $dosi_objeto->horario;
