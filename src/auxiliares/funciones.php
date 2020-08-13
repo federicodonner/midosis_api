@@ -52,3 +52,43 @@ function dataResponse(Response $response, object $data, Int $status)
           return [];
       }
   };
+
+
+  // Verifica que un usuario tenga permisos para acceder a un pastillero específico
+  function verificarPermisosUsuarioPastillero(Int $usuario_id, Int $pastillero_id)
+  {
+
+        // Si no se envía un id del pastillero, devuelve falso
+      if (!$pastillero_id) {
+          return false;
+      }
+
+      $sql = "SELECT * FROM usuario_x_pastillero WHERE usuario_id = $usuario_id AND pastillero_id = $pastillero_id";
+      try {
+          // Get db object
+          $db = new db();
+          // Connect
+          $db = $db->connect();
+          $stmt = $db->query($sql);
+          $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+          // Verifica que el profesor logueado tenga permisos para ver el examen
+          $acceso_edicion_pastillero = false;
+          $acceso_lectura_pastillero = false;
+
+          foreach ($usuarios as $usuario) {
+              if ($usuario->activo == 1) {
+                  $acceso_lectura_pastillero = true;
+                  if ($usuario->admin == 1) {
+                      $acceso_edicion_pastillero = true;
+                  }
+              }
+          }
+          $permisos_usuario->acceso_edicion_pastillero = $acceso_edicion_pastillero;
+          $permisos_usuario->acceso_lectura_pastillero = $acceso_lectura_pastillero;
+
+          return $permisos_usuario;
+      } catch (PDOException $e) {
+          echo '{"error":{"text": '.$e->getMessage().'}}';
+      }
+  }
