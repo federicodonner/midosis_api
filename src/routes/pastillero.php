@@ -75,12 +75,13 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
                     try {
 
                       // Genera el pastillero en la base de datos
-                        $sql = "INSERT INTO pastillero (dia_actualizacion) VALUES (:dia_actualizacion)";
+                        $sql = "INSERT INTO pastillero (dia_actualizacion, paciente_id) VALUES (:dia_actualizacion, :paciente_id)";
                         $db = new db();
                         $db = $db->connect();
 
                         $stmt = $db->prepare($sql);
                         $stmt->bindparam(':dia_actualizacion', $dia_actualizacion);
+                        $stmt->bindparam(':paciente_id', $usuario_id);
                         $stmt->execute();
 
                         // Obtiene el id del pastillero recién creado para asignarle el usuario
@@ -92,7 +93,7 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
                         $pastillero_id = $pastillero->id;
 
                         // Agrega al usuario como administrados y paciente del pastillero
-                        $sql = "INSERT INTO usuario_x_pastillero (usuario_id, pastillero_id, admin, activo, paciente) VALUES (:usuario_id, :pastillero_id, :admin, :activo, :paciente)";
+                        $sql = "INSERT INTO usuario_x_pastillero (usuario_id, pastillero_id, admin, activo) VALUES (:usuario_id, :pastillero_id, :admin, :activo)";
 
                         $uno = 1;
 
@@ -101,7 +102,6 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
                         $stmt->bindparam(':pastillero_id', $pastillero_id);
                         $stmt->bindparam(':admin', $uno);
                         $stmt->bindparam(':activo', $uno);
-                        $stmt->bindparam(':paciente', $uno);
                         $stmt->execute();
 
                         // Verifica que el request tenga dosis para el pastillero

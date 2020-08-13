@@ -34,7 +34,7 @@ $app->get('/api/usuario', function (Request $request, Response $response) {
 
                         $usuario = $usuarios[0];
 
-                        $sql = "SELECT p.* FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id WHERE usuario_id = $usuario_id";
+                        $sql = "SELECT p.*, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id LEFT JOIN usuario u ON p.paciente_id = u.id WHERE usuario_id = $usuario_id AND activo = 1";
 
                         $stmt = $db->query($sql);
                         $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
