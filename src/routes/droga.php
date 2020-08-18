@@ -4,45 +4,63 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 // Devuelve todas las drogas y sus medicinas
 $app->get('/api/droga', function (Request $request, Response $response) {
-    try {
+    // Verify if the auth header is available
+    if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
+        // If the header is available, get the token
+        $access_token = $request->getHeaders()['HTTP_AUTHORIZATION'][0];
+        $access_token = explode(" ", $access_token)[1];
+        // Find the access token, if a user is returned, post the products
+        if (!empty($access_token)) {
+            $user_found = verifyToken($access_token);
+            // Verify that there is a user logged in
+            if (!empty($user_found)) {
 
-      // Verifica que se haya esepcificado de qué pastillero obtener los medicamentos
-        $pastillero = $request->getQueryParams()['pastillero'];
+                // Verifica que se haya esepcificado de qué pastillero obtener los medicamentos
+                $pastillero_id = $request->getQueryParams()['pastillero'];
 
-        // En caso de contar con el pastillero, se hace la consulta
-        if ($pastillero) {
-            $sql = "SELECT * FROM droga WHERE pastillero = '$pastillero' ORDER BY nombre";
-        } else {
-            $sql = "SELECT * FROM droga ORDER BY nombre";
+                // En caso de contar con el pastillero, se hace la consulta
+                if ($pastillero_id) {
+
+                    // Verifica que el usuario tenga permisos de lectura del pastillero
+                    $usuario_id = $user_found[0]->usuario_id;
+                    $permisos_usuario = verificarPermisosUsuarioPastillero($usuario_id, $pastillero_id);
+                    // Como es un GET sólo verifica permisos de lectura
+                    if ($permisos_usuario->acceso_lectura_pastillero) {
+                        $sql = "SELECT * FROM droga WHERE pastillero_id = $pastillero_id ORDER BY nombre";
+                    } else {    //   if ($permisos_usuario->acceso_lectura_pastillero) {
+                        $db = null;
+                        return messageResponse($response, 'No tiene permisos para acceder al pastillero seleccionado', 403);
+                    }
+                } else {
+                    $sql = "SELECT * FROM droga ORDER BY nombre";
+                }
+                try {
+                    $db = new db();
+                    $db = $db->connect();
+
+                    // Selecciona todas las drogas
+                    $stmt = $db->query($sql);
+                    $drogas = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+                    // Genera un objeto para la respuesta
+                    $drogas_response->drogas = $drogas;
+                    $db = null;
+                    return dataResponse($response, $drogas_response, 200);
+                } catch (PDOException $e) {
+                    $db = null;
+                    return messageResponse($response, $e->getMessage(), 503);
+                }
+            } else {  // if (!empty($user_found)) {
+                $db = null;
+                return messageResponse($response, 'Error de login, usuario no encontrado', 401);
+            }
+        } else { // if (!empty($access_token)) {
+            $db = null;
+            return messageResponse($response, 'Error de login, falta access token', 401);
         }
-
-        $db = new db();
-        $db = $db->connect();
-
-        // Selecciona todas las drogas
-        $stmt = $db->query($sql);
-        $drogas = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-        //Encuentra las medicinas que tienen la droga seleccionada
-        foreach ($drogas as $droga) {
-
-            // Por cada droga, hace la query para buscar la medicina
-            $droga_id = $droga->id;
-            $sql = "SELECT * FROM medicina WHERE droga_id = $droga_id";
-            $stmt = $db->query($sql);
-            $medicinas = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-            $droga->medicinas = $medicinas;
-        }
-
-        // Genera un objeto para la respuesta
-        $drogas_response->drogas = $drogas;
+    } else { // if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
         $db = null;
-        return dataResponse($response, $drogas_response, 200);
-        return $newResponse;
-    } catch (PDOException $e) {
-        $db = null;
-        return messageResponse($response, $e->getMessage(), 503);
+        return messageResponse($response, 'Error de encabezado HTTP', 401);
     }
 });
 
@@ -51,30 +69,81 @@ $app->get('/api/droga', function (Request $request, Response $response) {
 
 // Add product
 $app->post('/api/droga', function (Request $request, Response $response) {
-    $nombre = $request->getParam('nombre');
-    $pastillero = $request->getParam('pastillero');
+    // Verify if the auth header is available
+    if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
+        // If the header is available, get the token
+        $access_token = $request->getHeaders()['HTTP_AUTHORIZATION'][0];
+        $access_token = explode(" ", $access_token)[1];
+        // Find the access token, if a user is returned, post the products
+        if (!empty($access_token)) {
+            $user_found = verifyToken($access_token);
+            // Verify that there is a user logged in
+            if (!empty($user_found)) {
+                $nombre = $request->getParam('nombre');
+                $pastillero_id = $request->getParam('pastillero');
+                // Verify that the information is present
+                if ($nombre && $pastillero_id) {
 
-    $sql = "INSERT INTO droga (nombre, pastillero) VALUES (:nombre, :pastillero)";
+                    // Verifica que el pastillero exista
+                    $sql = "SELECT * FROM pastillero WHERE id=$pastillero_id";
 
-    try {
-        // Get db object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
+                    $db = new db();
+                    $db = $db->connect();
 
-        $stmt = $db->prepare($sql);
+                    // Selecciona todas las drogas
+                    $stmt = $db->query($sql);
+                    $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
 
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':pastillero', $pastillero);
+                    // Verifica que haya algún pastillero con ese id
+                    if (count($pastilleros)>0) {
 
-        $stmt->execute();
+                        // Verifica que el usuario tenga permisos de escritura del pastillero
+                        $usuario_id = $user_found[0]->usuario_id;
+                        $permisos_usuario = verificarPermisosUsuarioPastillero($usuario_id, $pastillero_id);
+                        // Como es un POST verifica permisos de escritura
+                        if ($permisos_usuario->acceso_edicion_pastillero) {
+                            $sql = "INSERT INTO droga (nombre, pastillero_id) VALUES (:nombre, :pastillero)";
 
-        $newResponse = $response->withStatus(200);
-        $body = $response->getBody();
-        $body->write('{"status": "success","message": "Droga agregada", "droga": "'.$nombre.'"}');
-        $newResponse = $newResponse->withBody($body);
-        return $newResponse;
-    } catch (PDOException $e) {
-        echo '{"error":{"text": '.$e->getMessage().'}}';
+                            try {
+                                $stmt = $db->prepare($sql);
+
+                                $stmt->bindParam(':nombre', $nombre);
+                                $stmt->bindParam(':pastillero', $pastillero_id);
+
+                                $stmt->execute();
+
+                                // Obtiene el id de la droga recién creada para devolverla
+                                $sql="SELECT * FROM droga WHERE id = LAST_INSERT_ID()";
+                                $stmt = $db->query($sql);
+                                $drogas = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+                                $droga = $drogas[0];
+
+                                $db=null;
+                                return dataResponse($response, $droga, 201);
+                            } catch (PDOException $e) {
+                                echo '{"error":{"text": '.$e->getMessage().'}}';
+                            }
+                        } else {  // if ($permisos_usuario->acceso_lectura_pastillero) {
+                            $db = null;
+                            return messageResponse($response, 'No tiene permisos para acceder al pastillero seleccionado', 403);
+                        }
+                    } else {  // if(count($pastilleros)>0){
+                        return messageResponse($response, 'El pastillero seleccionado no existe', 404);
+                    }
+                } else {   //   if ($nombre && $pastillero_id) {
+                    return messageResponse($response, 'Campos incorrectos', 401);
+                }
+            } else {  // if (!empty($user_found)) {
+                $db = null;
+                return messageResponse($response, 'Error de login, usuario no encontrado', 401);
+            }
+        } else { // if (!empty($access_token)) {
+            $db = null;
+            return messageResponse($response, 'Error de login, falta access token', 401);
+        }
+    } else { // if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
+        $db = null;
+        return messageResponse($response, 'Error de encabezado HTTP', 401);
     }
 });
