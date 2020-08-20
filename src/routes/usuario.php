@@ -114,6 +114,8 @@ $app->post('/api/usuario', function (Request $request, Response $response) {
                     $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
 
                     unset($usuarios[0]->password);
+                    unset($usuarios[0]->pass_hash);
+                    unset($usuarios[0]->pendiente_cambio_pass);
 
                     $usuario = $usuarios[0];
 
