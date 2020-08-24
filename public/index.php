@@ -9,10 +9,8 @@ require '../src/config/db.php';
 require '../src/auxiliares/funciones.php';
 
 
-
 $app = new \Slim\App;
-
-
+require '../src/middleware/authentication.php';
 
 // Customer routes
 require '../src/routes/drogaxdosis.php';

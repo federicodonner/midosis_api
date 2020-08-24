@@ -24,6 +24,7 @@ $app->post('/api/oauth', function (Request $request, Response $response) {
             // Si no hay ningún usuario con ese nombre
             if ($usuarios == null) {
                 //cambio el estatus del mensaje e incluyo el mensaje de error
+                $db = null;
                 return messageResponse($response, 'Nombre de usuario o password incorrecto.', 409);
             } else {
                 // Verifica el password contra el hash
@@ -73,7 +74,7 @@ $app->post('/api/oauth', function (Request $request, Response $response) {
             // Si no devuelve ningún token, devuelvo error
             if ($tokens == null) {
                 //cambio el estatus del mensaje e incluyo el mensaje de error
-                return messageResponse($response, 'Token incorrecto.', 409);
+                return messageResponse($response, 'Token incorrecto.', 400);
             } else {  // if ($tokens == null) {
 
                 // Si encuentra uno, devuelve los detalles del usuario
@@ -86,6 +87,6 @@ $app->post('/api/oauth', function (Request $request, Response $response) {
         }
     } else {
         $db = null;
-        return messageResponse($response, 'Grant type incorrecto.', 406);
+        return messageResponse($response, 'Grant type incorrecto.', 400);
     }
 });

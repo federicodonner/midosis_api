@@ -5,64 +5,42 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 // Devuevle un solo usuario
 $app->get('/api/usuario', function (Request $request, Response $response) {
-    // Verify if the auth header is available
-    if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
-        // If the header is available, get the token
-        $access_token = $request->getHeaders()['HTTP_AUTHORIZATION'][0];
-        $access_token = explode(" ", $access_token)[1];
-        // Find the access token, if a user is returned, post the products
-        if (!empty($access_token)) {
-            $user_found = verifyToken($access_token);
-            // Verify that there is a user logged in
-            if (!empty($user_found)) {
-                // Devuelve el usuario dueño del token
-                $usuario_id = $user_found[0]->usuario_id;
-                $sql = "SELECT * FROM usuario WHERE id = $usuario_id";
+    // El id del usuario logueado viene del middleware authentication
+    $usuario_id = $request->getAttribute('usuario_id');
+    $sql = "SELECT * FROM usuario WHERE id = $usuario_id";
 
-                try {
-                    $db = new db();
-                    $db = $db->connect();
+    try {
+        $db = new db();
+        $db = $db->connect();
 
-                    $stmt = $db->query($sql);
-                    $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $stmt = $db->query($sql);
+        $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
 
-                    // Add the users array inside an object
-                    if (!empty($usuarios)) {
-                        // Delete the password hash for the response
-                        unset($usuarios[0]->pass_hash);
-                        unset($usuarios[0]->pendiente_cambio_pass);
+        // Add the users array inside an object
+        if (!empty($usuarios)) {
+            // Delete the password hash for the response
+            unset($usuarios[0]->pass_hash);
+            unset($usuarios[0]->pendiente_cambio_pass);
 
-                        $usuario = $usuarios[0];
+            $usuario = $usuarios[0];
 
-                        $sql = "SELECT p.*, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id LEFT JOIN usuario u ON p.paciente_id = u.id WHERE usuario_id = $usuario_id AND activo = 1";
+            $sql = "SELECT p.*, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id LEFT JOIN usuario u ON p.paciente_id = u.id WHERE usuario_id = $usuario_id AND activo = 1";
 
-                        $stmt = $db->query($sql);
-                        $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $stmt = $db->query($sql);
+            $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
 
-                        $usuario->pastilleros = $pastilleros;
+            $usuario->pastilleros = $pastilleros;
 
-                        $db = null;
-                        return dataResponse($response, $usuario, 200);
-                    } else {
-                        return messageResponse($response, 'Id incorrecto', 401);
-                    }
-                } catch (PDOException $e) {
-                    $db = null;
-                    return messageResponse($response, $e->getMessage(), 500);
-                }
-            } else {  // if (!empty($user_found)) {
-                $db = null;
-                return messageResponse($response, 'Error de login, usuario no encontrado', 401);
-            }
-        } else { // if (!empty($access_token)) {
             $db = null;
-            return messageResponse($response, 'Error de login, falta access token', 401);
+            return dataResponse($response, $usuario, 200);
+        } else {
+            return messageResponse($response, 'Usuario incorrecto', 401);
         }
-    } else { // if ($request->getHeaders()['HTTP_AUTHORIZATION']) {
+    } catch (PDOException $e) {
         $db = null;
-        return messageResponse($response, 'Error de encabezado HTTP', 401);
+        return messageResponse($response, $e->getMessage(), 500);
     }
-});
+})->add($authenticate);
 
 
 
@@ -144,16 +122,97 @@ $app->post('/api/usuario', function (Request $request, Response $response) {
 
                     return dataResponse($response, $usuario, 201);
                 } else { // if (empty($user)) {
-                    return messageResponse($response, 'El usuario ya existe', 401);
+                    return messageResponse($response, 'El usuario ya existe', 400);
                 }
             } catch (PDOException $e) {
                 $db = null;
                 return messageResponse($response, $e->getMessage(), 500);
             }
         } else { // if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return messageResponse($response, 'Formato de email incorrecto', 401);
+            return messageResponse($response, 'Formato de email incorrecto', 400);
         }
     } else { // if ($name && $username && $password && $email) {
-        return messageResponse($response, 'Campos incorrectos', 401);
+        return messageResponse($response, 'Campos incorrectos', 400);
     }
 });
+
+
+
+
+// Agrega un usuario
+  $app->put('/api/usuario', function (Request $request, Response $response) {
+      // El id del usuario logueado viene del middleware authentication
+      $usuario_id = $request->getAttribute('usuario_id');
+      // Verifica que se haya querido cambiar algún campo
+      $nombre_request = $request->getParam('nombre');
+      $apellido_request = $request->getParam('apellido');
+      $email_request = strtolower($request->getParam('email'));
+      $password_request = $request->getParam('password');
+
+      if (!$nombre_request && !$apellido_request && !$email_request && !$password_request) {
+          return messageResponse($response, 'Campos incorrectos, debe indicar el cambio de al menos un dato.', 400);
+      }
+
+      // Si hay un email, verifica que tenga el formato correcto
+      if ($email_request) {
+          // Verify that the email has an email format
+          if (!filter_var($email_request, FILTER_VALIDATE_EMAIL)) {
+              return messageResponse($response, 'Formato de email incorrecto.', 400);
+          }
+      }
+
+      // Obtiene los datos actuales del usuario de la base de datos
+      try {
+          $sql="SELECT * FROM usuario WHERE id=$usuario_id";
+
+          $db = new db();
+          $db = $db->connect();
+
+          $stmt = $db->query($sql);
+          $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+          $usuario_actual = $usuarios[0];
+
+          $sql = "UPDATE usuario SET
+          nombre = :nombre,
+          apellido = :apellido,
+          email = :email,
+          pass_hash = :pass_hash
+          WHERE id = $usuario_id";
+
+          $stmt = $db->prepare($sql);
+          // Por cada campo, sustituye el actual por el enviado si lo recibió
+          if ($nombre_request) {
+              $stmt->bindParam(':nombre', $nombre_request);
+          } else {
+              $stmt->bindParam(':nombre', $usuario_actual->nombre);
+          }
+
+          if ($apellido_request) {
+              $stmt->bindParam(':apellido', $apellido_request);
+          } else {
+              $stmt->bindParam(':apellido', $usuario_actual->apellido);
+          }
+
+          if ($email_request) {
+              $stmt->bindParam(':email', $email_request);
+          } else {
+              $stmt->bindParam(':email', $usuario_actual->email);
+          }
+
+          if ($password_request) {
+              $password_hash = password_hash($password_request, PASSWORD_BCRYPT);
+              $stmt->bindParam(':pass_hash', $password_hash);
+          } else {
+              $stmt->bindParam(':pass_hash', $usuario_actual->pass_hash);
+          }
+
+          $stmt->execute();
+
+          $db = null;
+          return messageResponse($response, 'Usuario actualizado exitosamente.', 200);
+      } catch (PDOException $e) {
+          $db = null;
+          return messageResponse($response, $e->getMessage(), 500);
+      }
+  })->add($authenticate);
