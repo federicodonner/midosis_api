@@ -20,7 +20,7 @@ $authenticate = function ($request, $response, $next) {
     // Si hay token, verifica que sea de un usuario logueado
     $user_found = verifyToken($access_token);
     if (empty($user_found)) {
-        return messageResponse($response, 'Error de login, usuario no encontrado', 401);
+        return messageResponse($response, 'Error de login, usuario no encontrado. Por favor vuelva a ingresar.', 401);
     }
 
     // Si encuentra todo el login ok, pasa el request a la aplicación
