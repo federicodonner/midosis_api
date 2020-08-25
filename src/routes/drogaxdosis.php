@@ -188,13 +188,22 @@ $app->put('/api/drogaxdosis/{id}', function (Request $request, Response $respons
 
         $stmt->execute();
 
+        $sql="SELECT dxd.cantidad_mg, dxd.dosis_id, dxd.droga_id, dxd.id, d.nombre, dxd.notas FROM droga_x_dosis dxd LEFT JOIN droga d ON dxd.droga_id = d.id WHERE dxd.id = $id";
+
+        $stmt = $db->query($sql);
+        $drogaxdosises = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $drogaxdosis_response = $drogaxdosises[0];
+
         $db = null;
-        return messageResponse($response, 'Dosis actualizada exitosamente.', 200);
+        return dataResponse($response, $drogaxdosis_response, 200);
     } catch (PDOException $e) {
         $db = null;
         return messageResponse($response, $e->getMessage(), 503);
     }
 })->add($authenticate);
+
+
 
 // Eliminar drogaxdosis
 $app->delete('/api/drogaxdosis/{id}', function (Request $request, Response $response) {

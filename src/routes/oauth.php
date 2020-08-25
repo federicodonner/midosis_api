@@ -25,7 +25,7 @@ $app->post('/api/oauth', function (Request $request, Response $response) {
             if ($usuarios == null) {
                 //cambio el estatus del mensaje e incluyo el mensaje de error
                 $db = null;
-                return messageResponse($response, 'Nombre de usuario o password incorrecto.', 409);
+                return messageResponse($response, 'Nombre de usuario o password incorrecto.', 403);
             } else {
                 // Verifica el password contra el hash
                 if (password_verify($access, $usuarios[0]->pass_hash)) {
@@ -53,7 +53,7 @@ $app->post('/api/oauth', function (Request $request, Response $response) {
                     return dataResponse($response, $authRespuesta, 200);
                 } else { //   if (password_verify($access, $profesores[0]->password)) {
                     // Si no coincide, devuelve error
-                    return messageResponse($response, 'Nombre de usuario o password incorrecto.', 409);
+                    return messageResponse($response, 'Nombre de usuario o password incorrecto.', 403);
                 }
             }
         } catch (PDOException $e) {

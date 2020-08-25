@@ -46,7 +46,6 @@ $app->get('/api/usuario', function (Request $request, Response $response) {
 
 // Agrega un usuario
 $app->post('/api/usuario', function (Request $request, Response $response) {
-
     // Get the user's details from the request body
     $nombre = $request->getParam('nombre');
     $apellido = $request->getParam('apellido');
