@@ -138,7 +138,7 @@ $app->post('/api/usuario', function (Request $request, Response $response) {
 
 
 
-// Agrega un usuario
+// Edita un usuario
   $app->put('/api/usuario', function (Request $request, Response $response) {
       // El id del usuario logueado viene del middleware authentication
       $usuario_id = $request->getAttribute('usuario_id');

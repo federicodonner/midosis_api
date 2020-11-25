@@ -150,3 +150,117 @@ $app->post('/api/pastillero', function (Request $request, Response $response) {
         return messageResponse($response, $e->getMessage(), 500);
     }
 })->add($authenticate);
+
+
+// Edita los nombres de las dosis del pastillero
+$app->put('/api/pastillero/{id}', function (Request $request, Response $response) {
+    // El id del usuario logueado viene del middleware authentication
+    $usuario_id = $request->getAttribute('usuario_id');
+    $pastillero_id = $request->getAttribute('id');
+
+    // Verifica que el usuario tenga permisos de lectura del pastillero
+    $permisos_usuario = verificarPermisosUsuarioPastillero($usuario_id, $pastillero_id);
+    // Como es un PUT verifica permisos de escritura
+    if (!$permisos_usuario->acceso_edicion_pastillero) {
+        $db = null;
+        return messageResponse($response, 'No tiene permisos para acceder al pastillero seleccionado', 403);
+    }
+
+    // Obtiene los detalles del pastillero del request
+    $dosis = $request->getParam('dosis');
+
+    // Verify that the information is present
+    if (!$dosis) {
+        return messageResponse($response, 'Campos incorrectos', 400);
+    }
+
+    try {
+        $sql = "SELECT * FROM pastillero WHERE id = $pastillero_id";
+        $db = new db();
+        $db = $db->connect();
+
+        $stmt = $db->query($sql);
+        $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        print_r($pastilleros);
+
+        // if
+//
+//       $pastillero = $pastilleros[0];
+//
+//
+//
+//
+//         // Genera el pastillero en la base de datos
+//         $sql = "INSERT INTO pastillero (dia_actualizacion, paciente_id) VALUES (:dia_actualizacion, :paciente_id)";
+//         $db = new db();
+//         $db = $db->connect();
+//
+//         $stmt = $db->prepare($sql);
+//         $stmt->bindparam(':dia_actualizacion', $dia_actualizacion);
+//         $stmt->bindparam(':paciente_id', $usuario_id);
+//         $stmt->execute();
+//
+//         // Obtiene el id del pastillero recién creado para asignarle el usuario
+//         $sql="SELECT * FROM pastillero WHERE id = LAST_INSERT_ID()";
+//         $stmt = $db->query($sql);
+//         $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
+//
+//         $pastillero = $pastilleros[0];
+//         $pastillero_id = $pastillero->id;
+//
+//         // Agrega al usuario como administrados y paciente del pastillero
+//         $sql = "INSERT INTO usuario_x_pastillero (usuario_id, pastillero_id, admin, activo) VALUES (:usuario_id, :pastillero_id, :admin, :activo)";
+//
+//         $uno = 1;
+//
+//         $stmt = $db->prepare($sql);
+//         $stmt->bindparam(':usuario_id', $usuario_id);
+//         $stmt->bindparam(':pastillero_id', $pastillero_id);
+//         $stmt->bindparam(':admin', $uno);
+//         $stmt->bindparam(':activo', $uno);
+//         $stmt->execute();
+//
+//         // Verifica que el request tenga dosis para el pastillero
+//         if ($dosis) {
+//             foreach ($dosis as $dosi) {
+//                 // Convierte el string a un JSON
+//                 $dosi_objeto = json_decode($dosi);
+//
+//                 $sql = "INSERT INTO dosis (horario, pastillero_id) VALUES (:horario, :pastillero_id)";
+//
+//                 $horario = $dosi_objeto->horario;
+//
+//                 $stmt = $db->prepare($sql);
+//                 $stmt->bindparam(':horario', $horario);
+//                 $stmt->bindparam(':pastillero_id', $pastillero_id);
+//                 $stmt->execute();
+//             }
+//         }
+//
+//         // Busca los detalles del usuario para devolverlo
+//         $sql = "SELECT uxp.*, u.* FROM usuario_x_pastillero uxp LEFT JOIN usuario u ON uxp.usuario_id = u.id WHERE usuario_id = $usuario_id AND pastillero_id = $pastillero_id";
+//
+//         $stmt = $db->query($sql);
+//         $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
+//
+//         unset($usuarios[0]->pass_hash);
+//         unset($usuarios[0]->pendiente_cambio_pass);
+//
+//         $pastillero->usuarios = $usuarios;
+//
+//         // Busca las dosis del pastillero para devolverlo
+//         $sql="SELECT * FROM dosis WHERE pastillero_id = $pastillero_id";
+//
+//         $stmt = $db->query($sql);
+//         $dosis_pastillero = $stmt->fetchAll(PDO::FETCH_OBJ);
+//
+//         $pastillero->dosis = $dosis_pastillero;
+//
+//         $db = null;
+//         return dataResponse($response, $pastillero, 201);
+    } catch (PDOException $e) {
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 500);
+    }
+})->add($authenticate);
