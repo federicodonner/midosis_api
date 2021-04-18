@@ -53,6 +53,13 @@ $app->get('/api/pastillero/{id}', function (Request $request, Response $response
 
         $pastillero->dosis = $dosis;
 
+        $paciente_id = $pastillero->paciente_id;
+        $sql="SELECT nombre, apellido FROM usuario WHERE id=$paciente_id";
+        $stmt = $db->query($sql);
+        $pacientes = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $pastillero->paciente=$pacientes[0];
+
         $db = null;
         return dataResponse($response, $pastillero, 200);
     } catch (PDOException $e) {
