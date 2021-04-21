@@ -20,6 +20,7 @@ require '../src/routes/compra.php';
 require '../src/routes/stock.php';
 require '../src/routes/armarpastillero.php';
 require '../src/routes/usuario.php';
+require '../src/routes/cambiopassword.php';
 require '../src/routes/oauth.php';
 require '../src/routes/cors.php';
 
