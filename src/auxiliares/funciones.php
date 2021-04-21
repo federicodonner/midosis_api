@@ -33,25 +33,39 @@ function dataResponse(Response $response, object $data, Int $status)
      return implode('', $pieces);
  };
 
+
  // Devuelve el usuario del login en base al token
-  function verifyToken(String $access_token)
-  {
-      if (!empty($access_token)) {
-          $sql = "SELECT * FROM login WHERE token = '$access_token'";
-          try {
-              $db = new db();
-              $db = $db->connect();
-              $stmt = $db->query($sql);
-              $users = $stmt->fetchAll(PDO::FETCH_OBJ);
-              $db = null;
-              return $users;
-          } catch (PDOException $e) {
-              echo '{"error":{"text": '.$e->getMessage().'}}';
-          }
-      } else {
-          return [];
-      }
-  };
+   function verifyToken(String $access_token)
+   {
+       if (empty($access_token)) {
+           return null;
+       }
+       $sql = "SELECT * FROM login WHERE token = '$access_token' ORDER BY login_dttm DESC LIMIT 1";
+       try {
+           $db = new db();
+           $db = $db->connect();
+           $stmt = $db->query($sql);
+           $users = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+           // Verifica que el login sea el último del usuario
+           $hora_ultimo_login = $users[0]->fechahora;
+           $usuario_id = $users[0]->usuario_id;
+
+           $sql = "SELECT * FROM login WHERE usuario_id = '$usuario_id' ORDER BY login_dttm DESC LIMIT 1";
+           $stmt = $db->query($sql);
+           $ultimo_login = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+           // Verifica que el último login del usuario sea el mismo que el del token
+           if ($ultimo_login[0]->token == $access_token) {
+               $db = null;
+               return $ultimo_login[0];
+           }
+           $db = null;
+           return null;
+       } catch (PDOException $e) {
+           echo '{"error":{"text": '.$e->getMessage().'}}';
+       }
+   };
 
 
   // Verifica que un usuario tenga permisos para acceder a un pastillero específico

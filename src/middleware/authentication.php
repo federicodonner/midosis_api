@@ -25,7 +25,7 @@ $authenticate = function ($request, $response, $next) {
 
     // Si encuentra todo el login ok, pasa el request a la aplicación
     // adjuntándole el id del usuario logueado
-    $usuario_id = $user_found[0]->usuario_id;
+    $usuario_id = $user_found->usuario_id;
     $request = $request->withAttribute('usuario_id', $usuario_id);
     $response = $next($request, $response);
 
