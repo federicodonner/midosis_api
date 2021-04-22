@@ -17,25 +17,26 @@ $app->get('/api/usuario', function (Request $request, Response $response) {
         $usuarios = $stmt->fetchAll(PDO::FETCH_OBJ);
 
         // Add the users array inside an object
-        if (!empty($usuarios)) {
-            // Delete the password hash for the response
-            unset($usuarios[0]->pass_hash);
-            unset($usuarios[0]->pendiente_cambio_pass);
-
-            $usuario = $usuarios[0];
-
-            $sql = "SELECT p.*, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id LEFT JOIN usuario u ON p.paciente_id = u.id WHERE usuario_id = $usuario_id AND activo = 1";
-
-            $stmt = $db->query($sql);
-            $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
-
-            $usuario->pastilleros = $pastilleros;
-
-            $db = null;
-            return dataResponse($response, $usuario, 200);
-        } else {
+        if (empty($usuarios)) {
+            $db=null;
             return messageResponse($response, 'Usuario incorrecto', 401);
         }
+        
+        // Delete the password hash for the response
+        unset($usuarios[0]->pass_hash);
+        unset($usuarios[0]->pendiente_cambio_pass);
+
+        $usuario = $usuarios[0];
+
+        $sql = "SELECT p.id, p.dia_actualizacion, p.paciente_id, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido FROM usuario_x_pastillero uxp LEFT JOIN pastillero p ON uxp.pastillero_id = p.id LEFT JOIN usuario u ON p.paciente_id = u.id WHERE usuario_id = $usuario_id AND activo = 1";
+
+        $stmt = $db->query($sql);
+        $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $usuario->pastilleros = $pastilleros;
+
+        $db = null;
+        return dataResponse($response, $usuario, 200);
     } catch (PDOException $e) {
         $db = null;
         return messageResponse($response, $e->getMessage(), 500);

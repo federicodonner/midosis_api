@@ -16,7 +16,7 @@ $app->get('/api/pastillero/{id}', function (Request $request, Response $response
     }
     try {
         $id = $request->getAttribute('id');
-        $sql = "SELECT * FROM pastillero WHERE id = $id";
+        $sql = "SELECT id, dia_actualizacion, paciente_id FROM pastillero WHERE id = $id";
         $db = new db();
         $db = $db->connect();
 
@@ -266,6 +266,109 @@ $app->put('/api/pastillero/{id}', function (Request $request, Response $response
 //
 //         $db = null;
 //         return dataResponse($response, $pastillero, 201);
+    } catch (PDOException $e) {
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 500);
+    }
+})->add($authenticate);
+
+
+// Genera el código para compartir el pastillero y lo guarda en la base de datos
+$app->get('/api/compartirpastillero/{id}', function (Request $request, Response $response) {
+    // El id del usuario logueado viene del middleware authentication
+    $usuario_id = $request->getAttribute('usuario_id');
+    // Verifica que el usuario tenga permisos de lectura del pastillero
+    $pastillero_id = $request->getAttribute('id');
+    $permisos_usuario = verificarPermisosUsuarioPastillero($usuario_id, $pastillero_id);
+    // Verifica permisos de escritura para el pastillero
+    if (!$permisos_usuario->acceso_edicion_pastillero) {
+        $db = null;
+        return messageResponse($response, 'No tiene permisos para acceder al pastillero seleccionado', 403);
+    }
+    try {
+        // Si tiene persmisos de secritura, genera el hash para compartir
+        $hash=random_str(6, "23456789ABCDEFGHJKLMNPQRSTUVWXYZ");
+        // Lo agarega a la base de datos
+        $sql = "UPDATE pastillero SET hash_compartir = '$hash' WHERE id = $pastillero_id";
+        $db = new db();
+        $db = $db->connect();
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+
+        // Devuelve el hash para mostrar
+        $db = null;
+        $objeto_respuesta->hash = $hash;
+        return dataResponse($response, $objeto_respuesta, 200);
+    } catch (PDOException $e) {
+        $db = null;
+        return messageResponse($response, $e->getMessage(), 500);
+    }
+})->add($authenticate);
+
+// Utiliza el código de compartir de un pastillero y agrega al usuario como editor
+$app->POST('/api/agregarpastillero', function (Request $request, Response $response) {
+    // El id del usuario logueado viene del middleware authentication
+    $usuario_id = $request->getAttribute('usuario_id');
+
+    // Verifica que recibió toda la información necesaria desde el request
+    $hash = $request->getParam('hash');
+    if (!$hash) {
+        $db=null;
+        return messageResponse($response, 'Debe especificar un hash', 400);
+    }
+
+    try {
+        // Verifica que exista algún pastillero con ese hash
+        $sql="SELECT * FROM pastillero WHERE hash_compartir='$hash'";
+        $db = new db();
+        $db = $db->connect();
+
+        $stmt = $db->query($sql);
+        $pastilleros = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+
+        if (count($pastilleros)==0) {
+            $db=null;
+            return messageResponse($response, 'No hay ningún pastillero con ese hash', 404);
+        }
+
+        $pastillero=$pastilleros[0];
+
+        // Verifica que el usuario no sea el paciente del pastillero
+        if ($pastillero->paciente_id == $usuario_id) {
+            $db=null;
+            return messageResponse($response, 'Eres el paciente de este pastillero, no puedes agregarlo a tu cuenta', 409);
+        }
+
+        // Verifica que el usuario no tenga control ya del pastillero
+        $pastillero_id = $pastillero->id;
+        $sql = "SELECT * FROM usuario_x_pastillero WHERE usuario_id = $usuario_id AND pastillero_id = $pastillero_id";
+
+        $stmt = $db->query($sql);
+        $permisos = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        if (count($permisos)!=0) {
+            $db=null;
+            return messageResponse($response, 'Ya tienes acceso al pastillero seleccionado', 409);
+        }
+
+
+        // Si estoy acá es porque el pastillero existe, el usuario no es el paciente
+        // ni tiene permisos sobre el pastillero seleccionado
+
+        // Elimino el hash
+        $sql="UPDATE pastillero SET hash_compartir = NULL WHERE id = $pastillero_id";
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+
+        // Agrega el usuario al pastillero
+        $sql="INSERT INTO usuario_x_pastillero (usuario_id, pastillero_id, admin, activo) VALUES ($usuario_id, $pastillero_id, 1,1)";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+
+        return messageResponse($response, "Acceso otorgado correctamente", 201);
     } catch (PDOException $e) {
         $db = null;
         return messageResponse($response, $e->getMessage(), 500);

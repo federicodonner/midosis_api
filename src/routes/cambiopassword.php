@@ -38,9 +38,7 @@ $app->post('/api/cambiopassword', function (Request $request, Response $response
         // Si estoy acá es porque la contraseña actual es correcta
         // Genera el hash en base a la nueva contraseña
         $password_hash = password_hash($nueva, PASSWORD_BCRYPT);
-        $sql = "UPDATE usuario SET
-        pass_hash = :password_hash
-        WHERE id = $usuario_id";
+        $sql = "UPDATE usuario SET pass_hash = :password_hash WHERE id = $usuario_id";
 
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':password_hash', $password_hash);
